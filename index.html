@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 4: Làm việc với máy tính - Tin học 3</title>
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --secondary: #FF9F1C;
+            --success: #2ECC71;
+            --danger: #E74C3C;
+            --background: #F4F7F6;
+            --text: #2C3E50;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .app-container {
+            width: 100%;
+            max-width: 800px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            background-color: var(--primary);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .progress-bar-container {
+            height: 10px;
+            background-color: #E0E0E0;
+            width: 100%;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: var(--secondary);
+            width: 0%;
+            transition: width 0.5s ease-in-out;
+        }
+        .screen {
+            display: none;
+            padding: 30px;
+            flex-grow: 1;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            animation: fadeIn 0.5s;
+        }
+        .screen.active {
+            display: flex;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h2 { font-size: 28px; color: var(--primary); margin-bottom: 20px; line-height: 1.4; }
+        p { font-size: 20px; line-height: 1.6; margin-bottom: 20px; }
+        
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            margin: 10px;
+            box-shadow: 0 5px 15px rgba(74, 144, 226, 0.3);
+        }
+        .btn:hover { transform: scale(1.05); }
+        .btn-secondary { background-color: var(--secondary); }
+        .btn-success { background-color: var(--success); }
+        
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            width: 100%;
+            max-width: 600px;
+        }
+        .option-btn {
+            background-color: #f0f4f8;
+            border: 2px solid var(--primary);
+            color: var(--text);
+            padding: 15px;
+            font-size: 18px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        .option-btn:hover { background-color: #e1e8f0; }
+        
+        /* Flashcards */
+        .flashcard-container { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+        .flashcard {
+            background: #fff; border: 2px dashed var(--secondary); border-radius: 15px;
+            padding: 20px; width: 250px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .flashcard img { width: 100%; border-radius: 10px; margin-bottom: 15px; }
+        .flashcard h3 { color: var(--secondary); margin-top: 0; }
+
+        /* Feedback Modal */
+        .feedback {
+            padding: 15px; margin-top: 20px; border-radius: 10px; font-weight: bold; font-size: 18px;
+            display: none; width: 100%; max-width: 600px;
+        }
+        .feedback.correct { background-color: #D5F5E3; color: #1E8449; display: block; border: 1px solid #2ECC71;}
+        .feedback.wrong { background-color: #FADBD8; color: #C0392B; display: block; border: 1px solid #E74C3C;}
+        
+        #score-display { font-size: 24px; font-weight: bold; color: var(--secondary); margin-top: 20px; }
+        
+        @media (max-width: 600px) {
+            h2 { font-size: 24px; }
+            p, .btn, .option-btn { font-size: 16px; }
+            .flashcard { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header">Tin Học 3 - Làm Việc Với Máy Tính 💻</div>
+    <div class="progress-bar-container"><div class="progress-bar" id="progress"></div></div>
+
+    <!-- Màn hình 1: Khởi động -->
+    <div class="screen active" id="screen-0">
+        <h2>👋 Xin chào bạn Khoa và các bạn!</h2>
+        <p>Hôm nay chúng ta có buổi học đầu tiên với máy tính. Đố bạn biết:<br><b>Khi sử dụng máy tính, chúng ta nên ngồi với tư thế nào là chuẩn nhất?</b></p>
+        <div class="options-grid">
+            <button class="option-btn" onclick="checkWarmUp(false, this)">A. Nằm ườn ra bàn cho thoải mái.</button>
+            <button class="option-btn" onclick="checkWarmUp(true, this)">B. Ngồi thẳng lưng, mắt cách màn hình 50 - 80cm.</button>
+            <button class="option-btn" onclick="checkWarmUp(false, this)">C. Ngồi vẹo sang một bên để dùng chuột cho dễ.</button>
+        </div>
+        <div id="warmup-feedback" class="feedback"></div>
+        <button class="btn btn-success hidden" id="btn-next-0" onclick="nextScreen(1)" style="margin-top: 20px;">Khám phá bài học ngay! 🚀</button>
+    </div>
+
+    <!-- Màn hình 2: Khám phá Kiến thức 1 -->
+    <div class="screen" id="screen-1">
+        <h2>🎯 1. Tư thế ngồi & Cách cầm chuột</h2>
+        <div class="flashcard-container">
+            <div class="flashcard">
+                <h3>🪑 Tư thế ngồi đúng</h3>
+                <ul style="text-align: left; font-size: 16px;">
+                    <li>Ngồi thẳng lưng, tư thế thoải mái.</li>
+                    <li>Mắt cách màn hình 50-80cm.</li>
+                    <li>Tay đặt ngang tầm bàn phím.</li>
+                    <li>Nghỉ ngơi sau 30 phút sử dụng.</li>
+                </ul>
+            </div>
+            <div class="flashcard">
+                <h3>🖱️ Cách cầm chuột</h3>
+                <ul style="text-align: left; font-size: 16px;">
+                    <li>Cầm bằng <b>tay phải</b>.</li>
+                    <li><b>Ngón trỏ:</b> đặt vào nút trái.</li>
+                    <li><b>Ngón giữa:</b> đặt vào nút phải.</li>
+                    <li>Ngón cái và các ngón còn lại giữ hai bên.</li>
+                </ul>
+            </div>
+        </div>
+        <button class="btn btn-secondary" onclick="nextScreen(2)" style="margin-top: 30px;">Tiếp tục 👉</button>
+    </div>
+
+    <!-- Màn hình 3: Hoạt động 1 - Ghép nối/Chọn -->
+    <div class="screen" id="screen-2">
+        <h2>🧩 Hoạt động 1: Cầm chuột đúng cách</h2>
+        <p>Em hãy nhớ lại kiến thức vừa học và chọn đáp án đúng nhé!</p>
+        <p><b>Ngón trỏ của tay phải được đặt ở bộ phận nào của chuột?</b></p>
+        <div class="options-grid">
+            <button class="option-btn" onclick="checkAct1(false, this, 'Thử lại nhé! Ngón này đặt ở nút bên kia cơ.')">Nút phải chuột</button>
+            <button class="option-btn" onclick="checkAct1(true, this, 'Chính xác! Ngón trỏ đặt ở nút trái chuột. 🎉')">Nút trái chuột</button>
+            <button class="option-btn" onclick="checkAct1(false, this, 'Chưa đúng, nút cuộn nằm ở giữa.')">Nút cuộn chuột</button>
+        </div>
+        <div id="act1-feedback" class="feedback"></div>
+        <button class="btn btn-success hidden" id="btn-next-2" onclick="nextScreen(3)" style="margin-top: 20px;">Tuyệt vời, Đi tiếp! 🚀</button>
+    </div>
+
+    <!-- Màn hình 4: Khám phá Kiến thức 2 -->
+    <div class="screen" id="screen-3">
+        <h2>🖱️ 2. Các thao tác chuột & Tắt máy</h2>
+        <div class="flashcard-container" style="gap: 10px;">
+            <div class="flashcard" style="width: 100%; max-width: 500px;">
+                <h3>✨ 5 Thao tác với chuột</h3>
+                <p style="font-size: 16px; text-align: left;">
+                    1. <b>Di chuyển chuột:</b> Thay đổi vị trí con trỏ.<br>
+                    2. <b>Nháy chuột (Click):</b> Nhấn nút trái 1 lần.<br>
+                    3. <b>Nháy nút phải chuột:</b> Nhấn nút phải 1 lần.<br>
+                    4. <b>Nháy đúp chuột:</b> Nhấn nút trái nhanh 2 lần liên tiếp.<br>
+                    5. <b>Kéo thả chuột:</b> Nhấn giữ nút trái, di chuyển rồi thả tay.
+                </p>
+            </div>
+            <div class="flashcard" style="width: 100%; max-width: 500px;">
+                <h3>🛑 Lưu ý khi làm việc với máy tính</h3>
+                <p style="font-size: 16px; text-align: left;">
+                    - Tắt máy đúng cách: Vào <b>Start -> Power -> Shut down</b>.<br>
+                    - KHÔNG tự ý rút phích cắm điện hoặc nhấn nút công tắc trên thân máy để tắt.<br>
+                    - Đóng các phần mềm đang mở trước khi tắt máy.
+                </p>
+            </div>
+        </div>
+        <button class="btn btn-secondary" onclick="nextScreen(4)" style="margin-top: 20px;">Vào phần thử thách! 🏆</button>
+    </div>
+
+    <!-- Màn hình 5: Game Challenge -->
+    <div class="screen" id="screen-4">
+        <h2>🎮 GAME CHALLENGE: CHINH PHỤC ĐỈNH CAO</h2>
+        <p id="question-text" style="font-weight: bold; font-size: 22px;"></p>
+        <div class="options-grid" id="game-options"></div>
+        <div id="game-feedback" class="feedback"></div>
+        <p style="margin-top:15px; color:#7f8c8d; font-size: 16px;">Câu hỏi: <span id="q-current">1</span>/<span id="q-total">5</span></p>
+    </div>
+
+    <!-- Màn hình 6: Tổng kết -->
+    <div class="screen" id="screen-5">
+        <h2>🎉 CHÚC MỪNG BẠN ĐÃ HOÀN THÀNH BÀI HỌC! 🎉</h2>
+        <p>Bạn đã nắm vững cách làm việc với máy tính, tư thế ngồi, thao tác chuột và cách bật/tắt máy tính an toàn.</p>
+        <div id="score-display"></div>
+        <img src="https://cdn-icons-png.flaticon.com/512/3176/3176294.png" alt="Cup" style="width: 150px; margin: 20px auto;">
+        <button class="btn" onclick="location.reload()">Học lại từ đầu 🔄</button>
+    </div>
+</div>
+
+<script>
+    let currentScreen = 0;
+    const totalScreens = 6;
+    let score = 0;
+    let currentQuestionIndex = 0;
+
+    const questions = [
+        {
+            q: "1. Tư thế ngồi đúng khi sử dụng máy tính sẽ giúp em tránh nguy cơ mắc những bệnh nào?",
+            opts: ["A. Đau tai", "B. Vẹo cột sống, cận thị", "C. Đau chân"],
+            ans: 1,
+            hint: "Máy tính ảnh hưởng đến mắt và lưng nhiều nhất đó!"
+        },
+        {
+            q: "2. Để mở một phần mềm (ví dụ: Word) trên màn hình nền, em sử dụng thao tác chuột nào?",
+            opts: ["A. Nháy chuột", "B. Kéo thả chuột", "C. Nháy đúp chuột"],
+            ans: 2,
+            hint: "Phải nhấn nhanh 2 lần liên tiếp nút trái chuột nhé!"
+        },
+        {
+            q: "3. Thao tác nào sau đây là ĐÚNG khi muốn tắt máy tính?",
+            opts: ["A. Rút phích cắm điện", "B. Nhấn nút công tắc trên thân máy", "C. Chọn Start \\ Power \\ Shut down"],
+            ans: 2,
+            hint: "Phải ra lệnh cho máy tính tắt từ màn hình chứ không được ngắt điện đột ngột!"
+        },
+        {
+            q: "4. Thao tác 'Nhấn giữ nút trái chuột, di chuyển con trỏ chuột đến vị trí mới rồi thả tay' gọi là gì?",
+            opts: ["A. Di chuyển chuột", "B. Nháy đúp chuột", "C. Kéo thả chuột"],
+            ans: 2,
+            hint: "Có hành động 'nhấn giữ' và 'thả' cơ mà!"
+        },
+        {
+            q: "5. Khi điều khiển chuột cũng là điều khiển con trỏ chuột trên màn hình?",
+            opts: ["A. Đúng", "B. Sai"],
+            ans: 0,
+            hint: "Chuột là thiết bị để chúng ta chỉ trỏ trên màn hình đó!"
+        }
+    ];
+
+    function updateProgress() {
+        const progress = (currentScreen / (totalScreens - 1)) * 100;
+        document.getElementById('progress').style.width = progress + '%';
+    }
+
+    function nextScreen(index) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('screen-' + index).classList.add('active');
+        currentScreen = index;
+        updateProgress();
+        if(index === 4) loadQuestion();
+    }
+
+    // Xử lý Khởi động
+    function checkWarmUp(isCorrect, btn) {
+        let feedback = document.getElementById('warmup-feedback');
+        document.querySelectorAll('#screen-0 .option-btn').forEach(b => b.style.borderColor = 'var(--primary)');
+        if(isCorrect) {
+            btn.style.borderColor = 'var(--success)';
+            btn.style.backgroundColor = '#D5F5E3';
+            feedback.className = 'feedback correct';
+            feedback.innerHTML = "Chính xác! Ngồi đúng tư thế giúp chúng ta bảo vệ cột sống và đôi mắt. 🌟";
+            document.getElementById('btn-next-0').classList.remove('hidden');
+        } else {
+            btn.style.borderColor = 'var(--danger)';
+            feedback.className = 'feedback wrong';
+            feedback.innerHTML = "Ôi, chưa đúng rồi! Ngồi sai sẽ bị đau lưng và cận thị đấy. Hãy chọn lại nhé!";
+        }
+    }
+
+    // Xử lý Hoạt động 1
+    function checkAct1(isCorrect, btn, msg) {
+        let feedback = document.getElementById('act1-feedback');
+        document.querySelectorAll('#screen-2 .option-btn').forEach(b => b.style.borderColor = 'var(--primary)');
+        if(isCorrect) {
+            btn.style.borderColor = 'var(--success)';
+            btn.style.backgroundColor = '#D5F5E3';
+            feedback.className = 'feedback correct';
+            feedback.innerHTML = msg;
+            document.getElementById('btn-next-2').classList.remove('hidden');
+        } else {
+            btn.style.borderColor = 'var(--danger)';
+            feedback.className = 'feedback wrong';
+            feedback.innerHTML = msg;
+        }
+    }
+
+    // Xử lý Game Challenge
+    function loadQuestion() {
+        if(currentQuestionIndex >= questions.length) {
+            document.getElementById('score-display').innerHTML = `Điểm số của bạn: <b>${score}/${questions.length}</b> 🌟`;
+            nextScreen(5);
+            return;
+        }
+        
+        let q = questions[currentQuestionIndex];
+        document.getElementById('question-text').innerText = q.q;
+        document.getElementById('q-current').innerText = currentQuestionIndex + 1;
+        document.getElementById('q-total').innerText = questions.length;
+        document.getElementById('game-feedback').style.display = 'none';
+        
+        let optionsHtml = '';
+        q.opts.forEach((opt, idx) => {
+            optionsHtml += `<button class="option-btn" onclick="checkGameAnswer(${idx}, ${q.ans}, '${q.hint}', this)">${opt}</button>`;
+        });
+        document.getElementById('game-options').innerHTML = optionsHtml;
+    }
+
+    function checkGameAnswer(selectedIdx, correctIdx, hint, btn) {
+        let feedback = document.getElementById('game-feedback');
+        let buttons = document.querySelectorAll('#game-options .option-btn');
+        
+        buttons.forEach(b => b.disabled = true); // Khóa nút sau khi chọn
+
+        if(selectedIdx === correctIdx) {
+            btn.style.backgroundColor = '#D5F5E3';
+            btn.style.borderColor = 'var(--success)';
+            feedback.className = 'feedback correct';
+            feedback.innerHTML = "Chính xác! Bạn thật giỏi! 🎉";
+            score++;
+            setTimeout(() => {
+                currentQuestionIndex++;
+                loadQuestion();
+            }, 2000);
+        } else {
+            btn.style.backgroundColor = '#FADBD8';
+            btn.style.borderColor = 'var(--danger)';
+            buttons[correctIdx].style.backgroundColor = '#D5F5E3'; // Hiện đáp án đúng
+            buttons[correctIdx].style.borderColor = 'var(--success)';
+            
+            feedback.className = 'feedback wrong';
+            feedback.innerHTML = "Chưa đúng rồi! Gợi ý: " + hint;
+            
+            setTimeout(() => {
+                currentQuestionIndex++;
+                loadQuestion();
+            }, 4000);
+        }
+    }
+</script>
+</body>
+</html>
